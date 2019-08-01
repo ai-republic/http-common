@@ -24,6 +24,12 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+/**
+ * Class to support creating {@link SSLContext} and {@link SSLEngine}.
+ * 
+ * @author Torsten Oltmanns
+ *
+ */
 public class SslSupport {
     private final static Logger LOG = Logger.getLogger(SslSupport.class.getName());
     private final static ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -31,16 +37,43 @@ public class SslSupport {
     private static int packetBufferSize = 16 * 1024;
 
 
+    /**
+     * Creates a {@link SSLContext} in client mode.
+     * 
+     * @return the {@link SSLContext}
+     * @throws IOException if creating the {@link SSLContext} fails
+     */
     public static SSLContext createClientSSLContext() throws IOException {
         return createSSLContext(true, null, null, null, null);
     }
 
 
+    /**
+     * Creates a {@link SSLContext} in server mode.
+     *
+     * @param keystoreFile the path to the keystore
+     * @param keystorePassword the password for the keystore
+     * @param truststoreFile the path to the truststore
+     * @param truststorePassword the password for the truststore
+     * @return the {@link SSLContext}
+     * @throws IOException if creating the {@link SSLContext} fails
+     */
     public static SSLContext createServerSSLContext(final String keystoreFile, final String keystorePassword, final String truststoreFile, final String truststorePassword) throws IOException {
         return createSSLContext(false, keystoreFile, keystorePassword, truststoreFile, truststorePassword);
     }
 
 
+    /**
+     * Creates a {@link SSLContext} in client or server mode.
+     *
+     * @param isClient flag whether to create the {@link SSLContext} in client or server mode.
+     * @param keystoreFile the path to the keystore
+     * @param keystorePassword the password for the keystore
+     * @param truststoreFile the path to the truststore
+     * @param truststorePassword the password for the truststore
+     * @return the {@link SSLContext}
+     * @throws IOException if creating the {@link SSLContext} fails
+     */
     static SSLContext createSSLContext(final boolean isClient, final String keystoreFile, final String keystorePassword, final String truststoreFile, final String truststorePassword) throws IOException {
         final SSLContext sslContext;
         try {
@@ -81,7 +114,7 @@ public class SslSupport {
      * @param keystorePassword - the keystore's password.
      * @param keyPassword - the key's passsword.
      * @return {@link KeyManager} array that will be used to initiate the {@link SSLContext}.
-     * @throws Exception
+     * @throws Exception if keymanagers could not be created
      */
     public static KeyManager[] createKeyManagers(final String filepath, final String keystorePassword, final String keyPassword) throws Exception {
         final KeyStore keyStore = KeyStore.getInstance("JKS");
@@ -108,7 +141,7 @@ public class SslSupport {
      * @param filepath - the path to the JKS keystore.
      * @param keystorePassword - the keystore's password.
      * @return {@link TrustManager} array, that will be used to initiate the {@link SSLContext}.
-     * @throws Exception
+     * @throws Exception if trustmanagers could not be created
      */
     public static TrustManager[] createTrustManagers(final String filepath, final String keystorePassword) throws Exception {
         final KeyStore trustStore = KeyStore.getInstance("JKS");
@@ -139,9 +172,9 @@ public class SslSupport {
      * list of available cipher suites - will be exchanged and if the handshake is successful will
      * lead to an established SSL/TLS session.
      *
-     * <p/>
+     * <p>
      * A typical handshake will usually contain the following steps:
-     *
+     * </p>
      * <ul>
      * <li>1. wrap: ClientHello</li>
      * <li>2. unwrap: ServerHello/Cert/ServerHelloDone</li>
@@ -151,13 +184,14 @@ public class SslSupport {
      * <li>6. unwrap: ChangeCipherSpec</li>
      * <li>7. unwrap: Finished</li>
      * </ul>
-     * <p/>
+     * <p>
      * Handshake is also used during the end of the session, in order to properly close the
      * connection between the two peers. A proper connection close will typically include the one
      * peer sending a CLOSE message to another, and then wait for the other's CLOSE message to close
      * the transport link. The other peer from his perspective would read a CLOSE message from his
      * peer and then enter the handshake procedure to send his own CLOSE message as well.
-     *
+     * </p>
+     * 
      * @param socketChannel - the socket channel that connects the two peers.
      * @param engine - the engine that will be used for encryption/decryption of the data exchanged
      *        with the other peer.
@@ -326,7 +360,7 @@ public class SslSupport {
 
 
     /**
-     * Compares <code>sessionProposedCapacity<code> with buffer's capacity. If buffer's capacity is
+     * Compares <code>sessionProposedCapacity</code> with buffer's capacity. If buffer's capacity is
      * smaller, returns a buffer with the proposed capacity. If it's equal or larger, returns a
      * buffer with capacity twice the size of the initial one.
      *
@@ -363,7 +397,6 @@ public class SslSupport {
      *        two peers.
      * @return The same buffer if there is no space problem or a new buffer with the same data but
      *         more space.
-     * @throws Exception
      */
     public static ByteBuffer handleBufferUnderflow(final SSLEngine engine, final ByteBuffer buffer) {
         if (engine.getSession().getPacketBufferSize() < buffer.limit()) {
@@ -380,12 +413,13 @@ public class SslSupport {
     /**
      * This method should be called when this peer wants to explicitly close the connection or when
      * a close message has arrived from the other peer, in order to provide an orderly shutdown.
-     * <p/>
+     * <p>
      * It first calls {@link SSLEngine#closeOutbound()} which prepares this peer to send its own
      * close message and sets {@link SSLEngine} to the <code>NEED_WRAP</code> state. Then, it
      * delegates the exchange of close messages to the handshake method and finally, it closes
      * socket channel.
-     *
+     * </p>
+     * 
      * @param socketChannel - the transport link used between the two peers.
      * @param engine - the engine used for encryption/decryption of the data exchanged between the
      *        two peers.
@@ -398,26 +432,56 @@ public class SslSupport {
     }
 
 
-    public static void setPacketBufferSize(final int size) {
-        packetBufferSize = size;
-    }
-
-
+    /**
+     * Gets the packet buffer size.
+     * 
+     * @return the packet buffer size
+     */
     public static int getPacketBufferSize() {
         return packetBufferSize;
     }
 
 
-    public static void setApplicationBufferSize(final int size) {
-        applicationBufferSize = size;
+    /**
+     * Sets the packet buffer size.
+     * 
+     * @param size the packet buffer size
+     */
+    public static void setPacketBufferSize(final int size) {
+        packetBufferSize = size;
     }
 
 
+    /**
+     * Gets the application buffer size.
+     * 
+     * @return the application buffer size
+     */
     public static int getApplicationBufferSize() {
         return applicationBufferSize;
     }
 
 
+    /**
+     * Sets the application buffer size.
+     * 
+     * @param size the application buffer size
+     */
+    public static void setApplicationBufferSize(final int size) {
+        applicationBufferSize = size;
+    }
+
+
+    /**
+     * Unwraps the content of the {@link ByteBuffer} using the {@link SSLEngine}. If the connection
+     * is closed by the peer it will also close the channel.
+     * 
+     * @param sslEngine the {@link SSLEngine}
+     * @param channel the {@link SocketChannel}
+     * @param buffer the {@link ByteBuffer}
+     * @return the unwrapped {@link ByteBuffer}
+     * @throws IOException if decryption fails
+     */
     public static ByteBuffer unwrap(final SSLEngine sslEngine, final SocketChannel channel, final ByteBuffer buffer) throws IOException {
         if (sslEngine == null) {
             return buffer;
@@ -445,7 +509,17 @@ public class SslSupport {
     }
 
 
-    public static ByteBuffer[] wrap(final SSLEngine sslEngine, final ByteBuffer... buffers) throws IOException {
+    /**
+     * Wraps the contents of the {@link ByteBuffer}s using the {@link SSLEngine}. If the connection
+     * is closed by the peer it will also close the channel.
+     * 
+     * @param sslEngine the {@link SSLEngine}
+     * @param channel the {@link SocketChannel}
+     * @param buffers the {@link ByteBuffer}s
+     * @return the unwrapped {@link ByteBuffer}
+     * @throws IOException if encryption fails
+     */
+    public static ByteBuffer[] wrap(final SSLEngine sslEngine, final SocketChannel channel, final ByteBuffer... buffers) throws IOException {
         if (sslEngine == null) {
             return buffers;
         }
@@ -473,6 +547,8 @@ public class SslSupport {
                     case BUFFER_UNDERFLOW:
                         throw new SSLException("Buffer underflow occured after a wrap. I don't think we should ever get here.");
                     case CLOSED:
+                        LOG.fine("Closing SSL connection...");
+                        closeConnection(channel, sslEngine);
                         return null;
                     default:
                         throw new IllegalStateException("Invalid SSL status: " + result.getStatus());
@@ -484,6 +560,15 @@ public class SslSupport {
     }
 
 
+    /**
+     * Performs a SSL handshake in client mode.
+     * 
+     * @param sslContext the {@link SSLContext} in client mode
+     * @param channel the {@link SocketChannel}
+     * @param uri the {@link URI} to connect to
+     * @return the {@link SSLEngine} created for the connection
+     * @throws IOException if handshaking fails
+     */
     public static SSLEngine clientSSLHandshake(final SSLContext sslContext, final SocketChannel channel, final URI uri) throws IOException {
         SSLEngine sslEngine;
         boolean success = false;
@@ -519,6 +604,14 @@ public class SslSupport {
     }
 
 
+    /**
+     * Performs a SSL handshake in server mode.
+     * 
+     * @param sslContext the {@link SSLContext} in server mode
+     * @param channel the {@link SocketChannel}
+     * @return the {@link SSLEngine} created for the connection
+     * @throws IOException if handshaking fails
+     */
     public static SSLEngine serverSSLHandshake(final SSLContext sslContext, final SocketChannel channel) throws IOException {
         SSLEngine sslEngine;
         boolean success = false;

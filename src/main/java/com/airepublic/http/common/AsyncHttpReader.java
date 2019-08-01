@@ -6,6 +6,12 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * An helper to read HTTP request and responses asynchronously.
+ * 
+ * @author Torsten Oltmanns
+ *
+ */
 public class AsyncHttpReader {
     private final List<ByteBuffer> requestBuffers = new ArrayList<>();
     private boolean fullyRead = false;
@@ -14,10 +20,10 @@ public class AsyncHttpReader {
 
 
     /**
-     * This method will parse the input buffer. If the request is fully read it will return true
-     * otherwise false if more data is needed.
+     * This method will parse the input buffer. If the request/response is fully read it will return
+     * true otherwise false if more data is needed.
      * 
-     * @param buffer
+     * @param buffer the buffer to process
      * @return if the request is fully read it will return true otherwise false if more data is
      *         needed
      * @throws IOException if reading from the buffer fails
@@ -47,6 +53,12 @@ public class AsyncHttpReader {
     }
 
 
+    /**
+     * Parses the received buffers as a {@link HttpRequest}.
+     * 
+     * @return the {@link HttpRequest}
+     * @throws IOException if the buffers do not contain a valid request
+     */
     public HttpRequest getHttpRequest() throws IOException {
         if (httpRequest == null) {
             if (fullyRead) {
@@ -63,6 +75,12 @@ public class AsyncHttpReader {
     }
 
 
+    /**
+     * Parses the received buffers as a {@link HttpResponse}.
+     * 
+     * @return the {@link HttpResponse}
+     * @throws IOException if the buffers do not contain a valid response
+     */
     public HttpResponse getHttpResponse() throws IOException {
         if (httpResponse == null) {
             if (fullyRead) {
@@ -80,12 +98,25 @@ public class AsyncHttpReader {
     }
 
 
+    /**
+     * Parses the HTTP status from the first line.
+     * 
+     * @param firstLine the first line of the raw response
+     * @return the {@link HttpStatus}
+     */
     private HttpStatus parseHttpStatus(final String firstLine) {
         final String[] split = firstLine.split(" ");
         return HttpStatus.forCode(Integer.valueOf(split[1]));
     }
 
 
+    /**
+     * Parses the received buffers and adds the headers to Headers object.
+     * 
+     * @param headers the {@link Headers} to populate
+     * @return the first line of the request/response
+     * @throws IOException if parsing fails
+     */
     private String parseHeaders(final Headers headers) throws IOException {
         boolean isFinishedHeaders = false;
         boolean isFirstLine = true;
@@ -139,6 +170,12 @@ public class AsyncHttpReader {
     }
 
 
+    /**
+     * Parses the request/response body.
+     * 
+     * @return the {@link ByteBuffer} containing only the body
+     * @throws IOException if parsing fails
+     */
     private ByteBuffer parseBody() throws IOException {
         final ByteBuffer body = BufferUtil.combineBuffers(requestBuffers);
         body.position(0);
@@ -146,6 +183,10 @@ public class AsyncHttpReader {
     }
 
 
+    /**
+     * Clears all received {@link ByteBuffer}s and resets this {@link AsyncHttpReader} to be reused
+     * again.
+     */
     public void clear() {
         requestBuffers.clear();
         httpRequest = null;
