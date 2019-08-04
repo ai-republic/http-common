@@ -135,9 +135,9 @@ public class AsyncHttpReader {
                         if (line.isBlank()) {
                             isFinishedHeaders = true;
 
-                            while (line != null && line.isBlank()) {
-                                line = BufferUtil.readLine(buffer, Charset.forName("ASCII"));
-                            }
+                            // while (line != null && line.isBlank()) {
+                            // line = BufferUtil.readLine(buffer, Charset.forName("ASCII"));
+                            // }
 
                             break;
                         } else {
