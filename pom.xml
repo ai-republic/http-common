@@ -3,7 +3,7 @@
 
 	<groupId>com.ai-republic</groupId>
 	<artifactId>http-common</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 
 	<name>HTTP common</name>
 	<description>A library with classes used for HTTP processing</description>
@@ -29,7 +29,7 @@
 		<connection>scm:git:git://github.com/ai-republic/http-common.git</connection>
 		<developerConnection>scm:git:git@github.com:ai-republic/http-common.git</developerConnection>
 		<url>https://github.com/ai-republic/http-common</url>
-		<tag>http-common-1.0.0</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<properties>
