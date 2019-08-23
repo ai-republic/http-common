@@ -64,18 +64,20 @@ public class HttpRequest {
 
 
     public void setRequestLine(final String requestLine) {
-        final String[] requestParts = requestLine.split(" ");
-        final String[] requestQuery = requestParts[1].split("\\?");
+        if (requestLine != null) {
+            final String[] requestParts = requestLine.split(" ");
+            final String[] requestQuery = requestParts[1].split("\\?");
 
-        method = requestParts[0];
-        path = requestQuery[0];
+            method = requestParts[0];
+            path = requestQuery[0];
 
-        if (requestQuery.length > 1) {
-            query = requestQuery[1];
+            if (requestQuery.length > 1) {
+                query = requestQuery[1];
+            }
+
+            version = requestParts[2];
+            scheme = "http";
         }
-
-        version = requestParts[2];
-        scheme = "http";
     }
 
 

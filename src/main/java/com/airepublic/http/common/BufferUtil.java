@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Utility methods to process a {@link ByteBuffer}.
@@ -62,15 +63,30 @@ public class BufferUtil {
     }
 
 
+    public static ByteBuffer combineBuffers(final ByteBuffer... buffers) throws IOException {
+        return combineBuffers(Stream.of(buffers));
+    }
+
+
     public static ByteBuffer combineBuffers(final Collection<ByteBuffer> buffers) throws IOException {
+        return combineBuffers(buffers.stream());
+    }
 
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
 
-            for (final ByteBuffer buffer : buffers) {
+    public static ByteBuffer combineBuffers(final Stream<ByteBuffer> buffers) throws IOException {
+
+        try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+
+            buffers.forEach(buffer -> {
                 final byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
-                bos.write(bytes);
-            }
+
+                try {
+                    bos.write(bytes);
+                } catch (final IOException e) {
+                    // ignore, cannot happen except when out-of-memory
+                }
+            });
 
             return ByteBuffer.wrap(bos.toByteArray());
         } catch (final IOException e) {

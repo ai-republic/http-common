@@ -3,6 +3,7 @@ package com.airepublic.http.common;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class Headers extends HashMap<String, List<String>> {
@@ -187,7 +188,7 @@ public class Headers extends HashMap<String, List<String>> {
     }
 
 
-    public Headers(final HashMap<String, List<String>> copy) {
+    public Headers(final Map<String, List<String>> copy) {
         super(copy);
     }
 
@@ -210,6 +211,14 @@ public class Headers extends HashMap<String, List<String>> {
             list = new ArrayList<>();
             put(key, list);
         }
+
+        Stream.of(values).forEach(list::add);
+    }
+
+
+    public void set(final String key, final String... values) {
+        final List<String> list = new ArrayList<>();
+        put(key, list);
 
         Stream.of(values).forEach(list::add);
     }
